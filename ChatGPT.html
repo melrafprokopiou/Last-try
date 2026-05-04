@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Έξυπνο (χαζό 😄) Chat Bot</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #343541;
+  color: white;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.header {
+  padding: 10px;
+  background: #202123;
+  text-align: center;
+  font-weight: bold;
+}
+
+#chat-box {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.message {
+  margin-bottom: 15px;
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 8px;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+.user {
+  background: #10a37f;
+  margin-left: auto;
+}
+
+.bot {
+  background: #444654;
+  margin-right: auto;
+}
+
+.input-area {
+  display: flex;
+  padding: 10px;
+  background: #40414f;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+}
+
+button {
+  margin-left: 10px;
+  padding: 10px 15px;
+  background: #10a37f;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0d8c6d;
+}
+
+.clear-btn {
+  background: #d9534f;
+}
+
+.clear-btn:hover {
+  background: #c9302c;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+  <div class="header">🤖 Απλό Ελληνικό Chat Bot</div>
+
+  <div id="chat-box"></div>
+
+  <div class="input-area">
+    <input id="user-input" type="text" placeholder="Γράψε κάτι..." />
+    <button onclick="sendMessage()">Αποστολή</button>
+    <button class="clear-btn" onclick="clearChat()">Καθαρισμός</button>
+  </div>
+</div>
+
+<script>
+const chatBox = document.getElementById("chat-box");
+
+// 🚫 Bad words filter
+const bannedWords = ["βρισιά", "κακήλέξη", "shit", "fuck"];
+
+function containsBadWord(text) {
+  return bannedWords.some(word => text.toLowerCase().includes(word));
+}
+
+function addMessage(text, className) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", className);
+  msg.textContent = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  saveChat();
+}
+
+// 💾 Save chat
+function saveChat() {
+  localStorage.setItem("chatHistory", chatBox.innerHTML);
+}
+
+// 🔁 Load chat
+function loadChat() {
+  const saved = localStorage.getItem("chatHistory");
+  if (saved) {
+    chatBox.innerHTML = saved;
+  }
+}
+
+// 🧹 Clear chat
+function clearChat() {
+  chatBox.innerHTML = "";
+  localStorage.removeItem("chatHistory");
+}
+
+// 🤖 BEST “DUMB SMART” AI
+function dumbGreekAI(input) {
+  const words = input.split(" ");
+  const keyword = words.find(w => w.length > 4) || words[0];
+
+  const starts = [
+    "Χμμ...",
+    "Νομίζω...",
+    "Ίσως...",
+    "Δεν είμαι σίγουρος αλλά...",
+    "Ααα...",
+    "Εντάξει..."
+  ];
+
+  const reactions = [
+    "ενδιαφέρον",
+    "περίεργο",
+    "κάπως καλό",
+    "λίγο μπερδεμένο",
+    "αστείο 😄",
+    "παράξενο 🤔"
+  ];
+
+  const ends = [
+    "ίσως είναι σωστό.",
+    "δεν το καταλαβαίνω 😅",
+    "μπορεί ναι ή όχι.",
+    "δεν νομίζω.",
+    "ίσως!"
+  ];
+
+  const start = starts[Math.floor(Math.random() * starts.length)];
+  const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+  const end = ends[Math.floor(Math.random() * ends.length)];
+
+  return `${start} αυτό που είπες για "${keyword}" είναι ${reaction}... ${end}`;
+}
+
+function sendMessage() {
+  const input = document.getElementById("user-input");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  if (containsBadWord(text)) {
+    addMessage("Μην χρησιμοποιείς κακές λέξεις ❗", "bot");
+    input.value = "";
+    return;
+  }
+
+  addMessage(text, "user");
+  input.value = "";
+
+  const typing = document.createElement("div");
+  typing.classList.add("message", "bot");
+  typing.textContent = "Γράφει...";
+  chatBox.appendChild(typing);
+
+  setTimeout(() => {
+    typing.remove();
+    const reply = dumbGreekAI(text);
+    addMessage(reply, "bot");
+  }, 700);
+}
+
+// Enter key
+document.getElementById("user-input").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") sendMessage();
+});
+
+// Load previous chat
+loadChat();
+</script>
+
+</body>
+</html>
